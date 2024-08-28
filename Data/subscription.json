@@ -1,0 +1,18 @@
+{
+    "payment": {
+        "amount": 100,
+        "payment_method": "Credit Card",
+        "transaction_no": "TXN1234567890",
+        "payment_status": "Completed",
+	"user_profile": 2
+    },
+    "trx": "TRX9876543210",
+    "code": "SUB2024",
+    "discount": 10,
+    "tax": 5,
+    "currency": "USD",
+    "expiry_date": null,
+    "is_active": true,
+    "user_profile": 2,
+    "pricing_plan": 2
+}

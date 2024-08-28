@@ -1,0 +1,231 @@
+CREATE TABLE `branches` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `representative_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mobile` varchar(112) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `pub_code` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `company_id` int NOT NULL,
+  `vendortype_id` int NOT NULL,
+  `status` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+CREATE TABLE `categories` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `order` int NOT NULL,
+  `status` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `created_by` int DEFAULT NULL,
+  `updated_by` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE `companies` (
+  `id` bigint UNSIGNED NOT NULL,
+  `code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `logo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_id` int NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `vendortype_id` int NOT NULL,
+  `status` int DEFAULT NULL,
+  `appeal` int DEFAULT NULL COMMENT '0=Waiting on Accounts 1=Accounts Approved 2=Accounts Rejected',
+  `appeal_by` int DEFAULT NULL,
+  `ceo_approval` int DEFAULT NULL COMMENT 'NULL=Not Appealed yet 0=Waiting for CEO Approval 1=CEO Approved 2=CEO Rejected',
+  `description` longtext COLLATE utf8mb4_unicode_ci,
+  `operation_year` varchar(111) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ownership_structure` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `lisence` varchar(111) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `curr_plan` int DEFAULT NULL,
+  `curr_plan_status` int DEFAULT NULL,
+  `pending_plan` int DEFAULT NULL,
+  `expiry_date` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `created_by` int NOT NULL,
+  `updated_by` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE `failed_jobs` (
+  `id` bigint UNSIGNED NOT NULL,
+  `uuid` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `connection` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `queue` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `exception` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `failed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE `subscription` (
+  `id` bigint UNSIGNED NOT NULL,
+  `trx` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `appeal` int DEFAULT NULL COMMENT '0=Waiting on Accounts\r\n1=Accounts Approved\r\n2=Accounts Rejected',
+  `appeal_by` int DEFAULT NULL,
+  `ceo_approval` int DEFAULT NULL COMMENT 'NULL=Not Appealed yet\r\n0=Waiting for CEO Approval\r\n1=CEO Approved\r\n2=CEO Rejected',
+  `user_id` int NOT NULL,
+  `plan_id` int DEFAULT NULL,
+  `company_id` int DEFAULT NULL,
+  `amount` int NOT NULL,
+  `currency` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `attachment` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `paying_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `expiry_date` timestamp NULL DEFAULT NULL,
+  `status` int DEFAULT NULL COMMENT '0=Pending, 1=Approved, 2=Rejected',
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `created_by` int NOT NULL,
+  `updated_by` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `password_reset_tokens` (
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE `personal_access_tokens` (
+  `id` bigint UNSIGNED NOT NULL,
+  `tokenable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tokenable_id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `abilities` text COLLATE utf8mb4_unicode_ci,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `pricings` (
+  `id` bigint UNSIGNED NOT NULL,
+  `code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `duration` int NOT NULL DEFAULT '365' COMMENT 'in days',
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `price` int NOT NULL,
+  `currency` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'BDT',
+  `max_user` int NOT NULL,
+  `sqi_score` int DEFAULT NULL,
+  `sqi_score_b` int DEFAULT NULL,
+  `ind_standard` int DEFAULT NULL,
+  `consultation` int DEFAULT NULL,
+  `seminer` int DEFAULT NULL,
+  `rdcs` int DEFAULT NULL,
+  `status` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `created_by` int DEFAULT NULL,
+  `updated_by` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `questions` (
+  `id` bigint UNSIGNED NOT NULL,
+  `vendortype_id` int DEFAULT NULL,
+  `category_id` int NOT NULL,
+  `ord` int DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `ratings` (
+  `id` bigint UNSIGNED NOT NULL,
+  `branch_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `company_id` int DEFAULT NULL,
+  `code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mobile` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `q1` int DEFAULT NULL,
+  `q2` int DEFAULT NULL,
+  `q3` int DEFAULT NULL,
+  `q4` int DEFAULT NULL,
+  `q5` int DEFAULT NULL,
+  `q6` int DEFAULT NULL,
+  `q7` int DEFAULT NULL,
+  `q8` int DEFAULT NULL,
+  `q9` int DEFAULT NULL,
+  `q10` int DEFAULT NULL,
+  `q11` int DEFAULT NULL,
+  `q12` int DEFAULT NULL,
+  `q13` int DEFAULT NULL,
+  `q14` int DEFAULT NULL,
+  `q15` int DEFAULT NULL,
+  `q16` int DEFAULT NULL,
+  `q17` int DEFAULT NULL,
+  `q18` int DEFAULT NULL,
+  `q19` int DEFAULT NULL,
+  `q20` int DEFAULT NULL,
+  `q21` int DEFAULT NULL,
+  `q22` int DEFAULT NULL,
+  `q23` int DEFAULT NULL,
+  `q24` int DEFAULT NULL,
+  `q25` int DEFAULT NULL,
+  `q26` int DEFAULT NULL,
+  `q27` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `sessions` (
+  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint UNSIGNED DEFAULT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text COLLATE utf8mb4_unicode_ci,
+  `payload` text COLLATE utf8mb4_unicode_ci,
+  `last_activity` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `users` (
+  `id` bigint UNSIGNED NOT NULL,
+  `company_id` int DEFAULT NULL,
+  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `admin` int DEFAULT NULL,
+  `is_ceo` int DEFAULT NULL,
+  `mobile` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `position` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `identification_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `country` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `postal` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `about` text COLLATE utf8mb4_unicode_ci,
+  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `session_id` longtext COLLATE utf8mb4_unicode_ci,
+  `active_color` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` int NOT NULL DEFAULT '1',
+  `is_login` int DEFAULT NULL,
+  `otp` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `created_by` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `vendortypes` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `icon` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
