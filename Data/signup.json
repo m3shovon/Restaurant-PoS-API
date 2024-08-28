@@ -1,16 +1,16 @@
 {
-    "email": "shoity@gmail.com",
-    "password": "shoity",
+    "email": "mufridshovon@gmail.com",
+    "password": "mufridshovon",
     "business_info": {
-      "business_name": "Example Business",
-      "business_address": "123 Business St, City, Country",
+      "business_name": "Arigato Gozaimas",
+      "business_address": "123 Business St, City, Japan",
       "mailing_address": "PO Box 456, City, Country",
       "phone_number": "+1234567890",
       "logo_picture": null 
     },
     "business_details": {
       "industry_category": 1, 
-      "description": "We are an example business operating since 2020.",
+      "description": "We are Arigato Gozaimas operating since 2020.",
       "year_in_operation": 2020,
       "ownershipstructure": 1,  
       "trade_license_no": "TRADE-123456"
@@ -18,9 +18,9 @@
     "branches": [
       {
         "branch_name": "Main Branch",
-        "address": "456 Branch St, City, Country",
+        "address": "456 Branch St, City, Japan",
         "representative_name": "John Doe",
-        "contact_number": "+9876543210",
+        "contact_number": "+880521430255",
         "email": "branch@example.com"
       },
       {

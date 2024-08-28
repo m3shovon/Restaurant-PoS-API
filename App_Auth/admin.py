@@ -1,5 +1,5 @@
 from django.contrib import admin
-from App_Auth.models import User, BusinessInfo, BusinessDetails, BranchInfo, OwnerInfo, UserProfile
+from App_Auth.models import User, BusinessInfo, BusinessDetails, BranchInfo, OwnerInfo, UserProfile, OwnershipStructure, IndustryCategory
 # Register your models here.
 
 class BusinessInfoAdmin(admin.ModelAdmin):
@@ -28,6 +28,8 @@ class UserProfileAdmin(admin.ModelAdmin):
     # search_fields = ( 'invoice_number','order_number','pk')
 
 admin.site.register(User)
+admin.site.register(OwnershipStructure)
+admin.site.register(IndustryCategory)
 admin.site.register(UserProfile,UserProfileAdmin)
 admin.site.register(BusinessInfo,BusinessInfoAdmin)
 admin.site.register(BusinessDetails,BusinessDetailsAdmin)
