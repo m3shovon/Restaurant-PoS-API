@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # APP
     'App_Auth',
-
+    'App_Pos',
+    'App_Payment',
 
     # PIP Package
     'rest_framework',

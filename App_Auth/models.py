@@ -18,12 +18,25 @@ class UserManager(BaseUserManager):
         user.is_admin = True
         user.save(using=self._db)
         return user
+    
+    def create_sub_user(self, email, password=None, branch=None):
+        if not email:
+            raise ValueError('Sub-users must have an email address')
+
+        sub_user = self.create_user(email, password)
+        sub_user.is_sub_user = True
+        sub_user.branch = branch
+        sub_user.save(using=self._db)
+        return sub_user
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
     password = models.CharField(max_length=128)
     is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
+    is_sub_user = models.BooleanField(default=False)
+
+    branch = models.ForeignKey(BranchInfo, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
 
     objects = UserManager()
 
