@@ -1,0 +1,414 @@
+models.py:
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.db import models
+from django.contrib.auth.models import PermissionsMixin
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None):
+        if not email:
+            raise ValueError('Users must have an email address')
+        user = self.model(email=self.normalize_email(email))
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None):
+        user = self.create_user(email, password)
+        user.is_admin = True
+        user.save(using=self._db)
+        return user
+
+class User(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(max_length=255, unique=True)
+    password = models.CharField(max_length=128)
+    is_active = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return self.email
+
+    def has_perm(self, perm, obj=None):
+        return True
+
+    def has_module_perms(self, app_label):
+        return True
+
+    @property
+    def is_staff(self):
+        return self.is_admin
+
+class OwnershipStructure(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, blank=True, null=True)
+    order = models.IntegerField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
+
+    class Meta:
+        db_table = 'ownershipstructure'
+
+    def __str__(self):
+        return f'{self.id} - {self.name}'
+
+class IndustryCategory(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    icon = models.CharField(max_length=255, blank=True, null=True)
+    slug = models.CharField(max_length=255, blank=True, null=True)
+    order = models.IntegerField(blank=True, null=True)
+    status = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
+    created_by = models.IntegerField(blank=True, null=True)
+    updated_by = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'categories'
+    
+    def __str__(self):
+        return f'{self.id} - {self.name}'
+    
+class BusinessInfo(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='business_info', blank=True, null=True)
+    business_name = models.CharField(max_length=255, blank=True, null=True)
+    business_address = models.TextField(blank=True, null=True)
+    mailing_address = models.TextField(blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    logo_picture = models.ImageField(upload_to='logos/', blank=True, null=True)
+
+class BusinessDetails(models.Model):
+    business_info = models.OneToOneField(BusinessInfo, on_delete=models.CASCADE, related_name='business_details', blank=True, null=True)
+    industry_category = models.ForeignKey(IndustryCategory, on_delete=models.CASCADE, related_name='industry_category', blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    year_in_operation = models.PositiveIntegerField(blank=True, null=True)
+    ownershipstructure = models.ForeignKey(OwnershipStructure, on_delete=models.CASCADE, blank=True, null=True)
+    trade_license_no = models.CharField(max_length=255, blank=True, null=True)
+
+class BranchInfo(models.Model):
+    business_info = models.ForeignKey(BusinessInfo, on_delete=models.CASCADE, related_name='branches', blank=True, null=True)
+    branch_name = models.CharField(max_length=255, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    representative_name = models.CharField(max_length=255, blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.branch_name
+
+class OwnerInfo(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='owner_info', blank=True, null=True)
+    owner_name = models.CharField(max_length=255, blank=True, null=True)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    owner_photo = models.ImageField(upload_to='owners/', blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.owner_name} - {self.title}'
+    
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_profile')
+    owner_info = models.ForeignKey(OwnerInfo, on_delete=models.CASCADE, null=True, blank=True, related_name='owner_profiles')
+    company_info = models.ForeignKey(BusinessInfo, on_delete=models.CASCADE, null=True, blank=True, related_name='company_profiles')
+    company_details = models.ForeignKey(BusinessDetails, on_delete=models.CASCADE, null=True, blank=True, related_name='details_profiles')
+    branches = models.ManyToManyField(BranchInfo, blank=True, related_name='branch_profiles')
+    sub_start_date = models.DateField(null=True, blank=True)
+    sub_expire_date = models.DateField(null=True, blank=True)
+    subscription = models.CharField(max_length=255, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    ceo_approval = models.BooleanField(default=False)
+    is_admin_user = models.BooleanField(default=False)
+    is_normal_user = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.email
+    
+    Serializers.py:
+from rest_framework import serializers
+from .models import User, BusinessInfo, BusinessDetails, BranchInfo, OwnerInfo, UserProfile
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User(
+            email=validated_data['email']
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+    
+    def update(self, instance, validated_data):
+        instance.email = validated_data.get('email', instance.email)
+        password = validated_data.get('password', None)
+        if password:
+            instance.set_password(password) 
+        instance.save()
+
+        return instance
+
+class AuthSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+class BusinessInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessInfo
+        fields = '__all__'
+
+class BusinessDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessDetails
+        fields = '__all__'
+
+class BranchInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BranchInfo
+        fields = '__all__'
+
+class OwnerInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OwnerInfo
+        fields = '__all__'
+
+class SignupSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    business_info = BusinessInfoSerializer()
+    business_details = BusinessDetailsSerializer()
+    branches = BranchInfoSerializer(many=True)
+    owner_info = OwnerInfoSerializer()
+
+    def create(self, validated_data):
+        # Extract the related data
+        business_info_data = validated_data.pop('business_info')
+        business_details_data = validated_data.pop('business_details')
+        branches_data = validated_data.pop('branches')
+        owner_info_data = validated_data.pop('owner_info')
+
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+
+        business_info = BusinessInfo.objects.create(user=user, **business_info_data)
+        business_details = BusinessDetails.objects.create(business_info=business_info, **business_details_data)
+
+        for branch_data in branches_data:
+            BranchInfo.objects.create(business_info=business_info, **branch_data)
+
+        owner_info = OwnerInfo.objects.create(user=user, **owner_info_data)
+
+        user_profile = UserProfile.objects.get(user=user)
+        user_profile.owner_info = owner_info
+        user_profile.company_info = business_info
+        user_profile.company_details = business_details
+        user_profile.branches.set(BranchInfo.objects.filter(business_info=business_info))
+        user_profile.save()
+
+        return user
+
+class ProfileSerializer(serializers.ModelSerializer):
+    business_info = BusinessInfoSerializer()
+    business_details = BusinessDetailsSerializer(source='business_info.business_details', read_only=True)
+    branches = BranchInfoSerializer(source='business_info.branches', many=True, read_only=True)
+    owner_info = OwnerInfoSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = "__all__"
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
+
+
+Signals.py:
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .models import User, BusinessInfo, BusinessDetails, BranchInfo, OwnerInfo, UserProfile
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=BusinessInfo)
+def update_business_info(sender, instance, created, **kwargs):
+    if created:
+        user_profile = UserProfile.objects.get(user=instance.user)
+        user_profile.company_info = instance
+        user_profile.save()
+
+@receiver(post_save, sender=BusinessDetails)
+def update_business_details(sender, instance, created, **kwargs):
+    user_profile = UserProfile.objects.get(user=instance.business_info.user)
+    user_profile.company_details = instance
+    user_profile.save()
+
+@receiver(post_save, sender=BranchInfo)
+def update_branch_info(sender, instance, created, **kwargs):
+    user_profile = UserProfile.objects.get(user=instance.business_info.user)
+    user_profile.branches.add(instance)
+    user_profile.save()
+
+@receiver(post_save, sender=OwnerInfo)
+def update_owner_info(sender, instance, created, **kwargs):
+    if created:
+        user_profile = UserProfile.objects.get(user=instance.user)
+        user_profile.owner_info = instance
+        user_profile.save()
+
+views.py:
+# # App_Auth/views.py
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from .models import User,UserProfile, BusinessInfo, BusinessDetails, BranchInfo, OwnerInfo
+from .serializers import SignupSerializer, AuthSerializer, ProfileSerializer, UserProfileSerializer, UserSerializer, OwnerInfoSerializer, BranchInfoSerializer, BusinessDetailsSerializer,BusinessInfoSerializer
+from django.contrib.auth import authenticate, login, logout
+from rest_framework.authtoken.models import Token
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ProfileViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = ProfileSerializer
+
+    @action(detail=False, methods=['post'], serializer_class=SignupSerializer)
+    def signup(self, request):
+        serializer = SignupSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({'user': ProfileSerializer(user).data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'], serializer_class=AuthSerializer)
+    def signin(self, request):
+        serializer = AuthSerializer(data=request.data)
+        if serializer.is_valid():
+            user = authenticate(email=serializer.validated_data['email'], password=serializer.validated_data['password'])
+            if user is not None:
+                login(request, user)
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key}, status=status.HTTP_200_OK)
+            return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def signout(self, request):
+        logout(request)
+        return Response(status=status.HTTP_200_OK)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = ProfileSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+# View Data of User
+class SingleUserProfileViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProfileSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+class AllUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProfileSerializer
+    queryset = User.objects.all()
+
+# User
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)
+     
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+
+class BusinessInfoViewSet(viewsets.ModelViewSet):
+    queryset = BusinessInfo.objects.all()
+    serializer_class = BusinessInfoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return BusinessInfo.objects.filter(user=self.request.user)
+
+class BusinessDetailsViewSet(viewsets.ModelViewSet):
+    queryset = BusinessDetails.objects.all()
+    serializer_class = BusinessDetailsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return BusinessDetails.objects.filter(business_info__user=self.request.user)
+
+# BranchInfo
+class BranchInfoViewSet(viewsets.ModelViewSet):
+    queryset = BranchInfo.objects.all()
+    serializer_class = BranchInfoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return BranchInfo.objects.filter(business_info__user=self.request.user)
+
+# OwnerInfo
+class OwnerInfoViewSet(viewsets.ModelViewSet):
+    queryset = OwnerInfo.objects.all()
+    serializer_class = OwnerInfoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return OwnerInfo.objects.filter(user=self.request.user)    
+
+class UserProfileViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+
+    def get_queryset(self):
+        return UserProfile.objects.filter(user=self.request.user)
+
+
+This is my App_Auth.
+Here, after a user sign up and signing in, He can create new user who can log in using email password created by main user who has signed in. the user that will be created will be under branches.
+
+Now do it and update the code where it needs to be updated.
