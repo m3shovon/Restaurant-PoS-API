@@ -39,8 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # APP
     'App_Auth',
-    'App_Pos',
-    'App_Payment',
+    # 'App_Pos',
+    # 'App_Payment',
 
     # PIP Package
     'rest_framework',
@@ -67,18 +67,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'CORE.urls'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': 
-    [
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ],
-        'DEFAULT_PERMISSION_CLASSES':
-    [
-        # 'rest_framework.permissions.IsAuthenticated',
-        # 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ],
-    'DEFAULT_FILTER_BACKENDS':
-    ['django_filters.rest_framework.DjangoFilterBackend']
+    ]
 }
 
 TEMPLATES = [
@@ -103,6 +94,8 @@ CORS_ALLOW_CREDENTIALS = True
 WSGI_APPLICATION = 'CORE.wsgi.application'
 
 AUTH_USER_MODEL = 'App_Auth.User'
+
+# AUTHENTICATION_BACKENDS = ['App_Auth.views.EmailBackend']
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases

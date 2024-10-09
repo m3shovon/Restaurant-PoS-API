@@ -22,3 +22,4 @@ django-admin-interface
 # Django CKEditor For Blog
 # django-ckeditor
 
+# djangorestframework-authtoken
